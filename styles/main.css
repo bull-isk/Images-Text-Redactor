@@ -1,0 +1,468 @@
+/* ---------------------------------------------------------
+   Tokens
+--------------------------------------------------------- */
+:root {
+	--paper: #eeece4;
+	--paper-dark: #d9d5c7;
+	--ink: #201d18;
+	--ink-soft: #55503f;
+	--redact: #1a1a1a;
+	--accent: #a3312a; /* stamp red */
+	--accent-soft: #c9564d;
+	--keep: #3f6b4f; /* kept-region green */
+	--line: #c7c2b2;
+
+	--font-display: "Caveat", cursive;
+	--font-body: "Source Serif 4", Georgia, serif;
+	--font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+	--radius: 2px;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: var(--paper);
+	background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.015) 0px, rgba(0, 0, 0, 0.015) 1px, transparent 1px, transparent 3px);
+	color: var(--ink);
+	font-family: var(--font-body);
+	min-height: 100vh;
+}
+
+/* ---------------------------------------------------------
+   Topbar
+--------------------------------------------------------- */
+.topbar {
+	padding: 2.5rem 2rem 1.5rem;
+	border-bottom: 1px solid var(--line);
+	max-width: 1200px;
+	margin: 0 auto;
+}
+.topbar__mark {
+	display: flex;
+	align-items: baseline;
+	gap: 0.9rem;
+}
+.topbar__stamp {
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.18em;
+	color: var(--accent);
+	border: 2px solid var(--accent);
+	padding: 0.15rem 0.45rem;
+	transform: rotate(-4deg);
+	display: inline-block;
+}
+.topbar__title {
+	font-family: var(--font-mono);
+	font-weight: 700;
+	font-size: 1.4rem;
+	letter-spacing: -0.02em;
+	margin: 0;
+}
+.topbar__tag {
+	margin: 0.5rem 0 0;
+	color: var(--ink-soft);
+	font-size: 0.98rem;
+	max-width: 46em;
+}
+
+/* ---------------------------------------------------------
+   Layout
+--------------------------------------------------------- */
+.app {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 2rem;
+}
+
+/* ---------------------------------------------------------
+   Dropzone
+--------------------------------------------------------- */
+.dropzone[data-visible="false"] {
+	display: none;
+}
+
+.dropzone__inner {
+	border: 2px dashed var(--ink-soft);
+	border-radius: var(--radius);
+	padding: 5rem 2rem;
+	text-align: center;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
+	background: rgba(255, 255, 255, 0.25);
+}
+.dropzone__inner:hover,
+.dropzone__inner.is-dragover {
+	border-color: var(--accent);
+	background: rgba(163, 49, 42, 0.05);
+}
+.dropzone__icon {
+	font-size: 2rem;
+	margin: 0 0 0.5rem;
+	color: var(--ink-soft);
+}
+.dropzone__label {
+	font-size: 1.15rem;
+	margin: 0;
+}
+.dropzone__hint {
+	color: var(--ink-soft);
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	margin-top: 0.5rem;
+}
+
+/* ---------------------------------------------------------
+   Workspace
+--------------------------------------------------------- */
+.workspace[data-visible="false"] {
+	display: none;
+}
+.workspace {
+	display: grid;
+	grid-template-columns: 1fr 280px;
+	gap: 2rem;
+	align-items: start;
+}
+
+@media (max-width: 800px) {
+	.workspace {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Grey out everything except the loading overlay itself while scanning */
+.workspace.is-loading .canvas-toolbar,
+.workspace.is-loading .sidebar {
+	opacity: 0.45;
+	pointer-events: none;
+	filter: grayscale(0.6);
+}
+.workspace.is-loading #imageCanvas,
+.workspace.is-loading #overlayCanvas {
+	filter: grayscale(0.85) brightness(0.55);
+	pointer-events: none;
+}
+
+/* ---------------------------------------------------------
+   Canvas column: toolbar strip + canvas
+--------------------------------------------------------- */
+.canvas-column {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	min-width: 0;
+}
+
+.canvas-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+	background: rgba(255, 255, 255, 0.5);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 0.6rem 0.75rem;
+	transition:
+		opacity 0.15s ease,
+		filter 0.15s ease;
+}
+.canvas-toolbar__actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.method-list--row {
+	display: flex;
+	flex-direction: row;
+	gap: 0.5rem;
+}
+.method-list--row .method-option {
+	padding: 0.4rem 0.6rem;
+}
+.method-list--row .method-option__desc {
+	display: none;
+} /* keep the strip compact */
+
+/* ---------------------------------------------------------
+   Sidebar (method + export)
+--------------------------------------------------------- */
+.sidebar {
+	position: sticky;
+	top: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.75rem;
+	background: rgba(255, 255, 255, 0.35);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 1.25rem;
+	transition:
+		opacity 0.15s ease,
+		filter 0.15s ease;
+}
+.sidebar__group--push {
+	margin-top: 0.5rem;
+}
+
+/* ---------------------------------------------------------
+   Canvas stage
+--------------------------------------------------------- */
+.canvas-wrap {
+	position: relative;
+	max-width: 100%;
+	border: 1px solid var(--line);
+	background:
+		linear-gradient(45deg, #e2ded0 25%, transparent 25%), linear-gradient(-45deg, #e2ded0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e2ded0 75%),
+		linear-gradient(-45deg, transparent 75%, #e2ded0 75%);
+	background-size: 20px 20px;
+	background-position:
+		0 0,
+		0 10px,
+		10px -10px,
+		-10px 0px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+#imageCanvas,
+#overlayCanvas {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	transition: filter 0.15s ease;
+}
+#overlayCanvas {
+	position: absolute;
+	inset: 0;
+	cursor: pointer;
+}
+
+/* ---------------------------------------------------------
+   Loading overlay (progress bar, centered on top of the image)
+--------------------------------------------------------- */
+.loading-overlay {
+	position: absolute;
+	inset: 0;
+	display: none;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.6rem;
+	padding: 0 15%;
+	background: rgba(20, 18, 14, 0.25);
+	z-index: 2;
+}
+.workspace.is-loading .loading-overlay {
+	display: flex;
+}
+.loading-overlay .progress-bar {
+	width: 100%;
+	max-width: 320px;
+	background: rgba(255, 255, 255, 0.9);
+}
+.loading-overlay__label {
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	color: #fff;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+	margin: 0;
+}
+.toolbar__heading {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--ink-soft);
+	margin: 0 0 0.75rem;
+}
+.toolbar__hint {
+	font-size: 0.85rem;
+	color: var(--ink-soft);
+	margin: 0.35rem 0;
+}
+.toolbar__hint--small {
+	font-size: 0.78rem;
+}
+.toolbar__actions {
+	display: flex;
+	gap: 0.5rem;
+	margin: 0.5rem 0;
+}
+
+.method-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+.method-option {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.6rem;
+	padding: 0.55rem 0.6rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	cursor: pointer;
+	background: #fff;
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.15s ease;
+}
+.method-option:hover {
+	border-color: var(--accent-soft);
+}
+.method-option[aria-checked="true"] {
+	border-color: var(--accent);
+	box-shadow: inset 0 0 0 1px var(--accent);
+}
+.method-option__radio {
+	width: 0.9rem;
+	height: 0.9rem;
+	margin-top: 0.2rem;
+	border-radius: 50%;
+	border: 1.5px solid var(--ink-soft);
+	flex-shrink: 0;
+}
+.method-option[aria-checked="true"] .method-option__radio {
+	border-color: var(--accent);
+	background: var(--accent);
+}
+.method-option__name {
+	font-weight: 600;
+	font-size: 0.92rem;
+	display: block;
+}
+.method-option__desc {
+	font-size: 0.78rem;
+	color: var(--ink-soft);
+	display: block;
+	margin-top: 0.1rem;
+}
+
+.btn {
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	letter-spacing: 0.02em;
+	padding: 0.6rem 0.9rem;
+	border-radius: var(--radius);
+	border: 1px solid var(--ink);
+	background: transparent;
+	cursor: pointer;
+	transition:
+		transform 0.1s ease,
+		background 0.15s ease,
+		color 0.15s ease;
+}
+.btn:hover {
+	transform: translateY(-1px);
+}
+.btn--ghost {
+	color: var(--ink);
+	flex: 1;
+}
+.btn--ghost:hover {
+	background: rgba(0, 0, 0, 0.04);
+}
+.btn--primary {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: #fff;
+	width: 100%;
+}
+.btn--primary:hover {
+	background: var(--accent-soft);
+}
+.btn--primary:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+}
+.btn--active {
+	background: var(--ink);
+	border-color: var(--ink);
+	color: var(--paper);
+}
+
+/* ---------------------------------------------------------
+   Progress bar
+--------------------------------------------------------- */
+.progress-bar {
+	width: 100%;
+	height: 8px;
+	border: 1px solid var(--ink);
+	border-radius: var(--radius);
+	overflow: hidden;
+	background: #fff;
+	margin-bottom: 0.5rem;
+}
+.progress-bar__fill {
+	height: 100%;
+	width: 0%;
+	background: var(--accent);
+	transition: width 0.2s ease;
+}
+
+/* ---------------------------------------------------------
+   Skeleton loading overlay (shown on the canvas while OCR runs)
+--------------------------------------------------------- */
+.skeleton-overlay {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+	background: linear-gradient(100deg, rgba(238, 236, 228, 0) 30%, rgba(255, 255, 255, 0.55) 50%, rgba(238, 236, 228, 0) 70%);
+	background-size: 200% 100%;
+}
+.skeleton-overlay.is-visible {
+	opacity: 1;
+	animation: skeleton-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+	0% {
+		background-position: 150% 0;
+	}
+	100% {
+		background-position: -50% 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.skeleton-overlay.is-visible {
+		animation: none;
+		opacity: 0.6;
+	}
+}
+
+/* ---------------------------------------------------------
+   Toast
+--------------------------------------------------------- */
+.toast {
+	position: fixed;
+	bottom: 1.5rem;
+	left: 50%;
+	transform: translateX(-50%) translateY(120%);
+	background: var(--ink);
+	color: var(--paper);
+	font-family: var(--font-mono);
+	font-size: 0.82rem;
+	padding: 0.7rem 1.1rem;
+	border-radius: var(--radius);
+	transition: transform 0.25s ease;
+	z-index: 20;
+}
+.toast.is-visible {
+	transform: translateX(-50%) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.btn,
+	.toast,
+	.dropzone__inner {
+		transition: none;
+	}
+}
