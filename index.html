@@ -14,11 +14,10 @@
 	<body>
 		<header class="topbar">
 			<div class="topbar__mark">
-				<button class="btn btn--ghost btn--back" id="resetBtn" type="button" hidden>&larr; Start over</button>
 				<span class="topbar__stamp">REDACTED</span>
 				<h1 class="topbar__title">Redactor</h1>
 			</div>
-			<p class="topbar__tag">Drop an image, choose what to hide, download the result. Nothing leaves your browser.</p>
+			<button class="topbar__back" id="resetBtn" type="button" hidden>&larr; Start over</button>
 		</header>
 
 		<main class="app" id="app">
@@ -40,7 +39,7 @@
 						<div class="toolbar-divider" aria-hidden="true"></div>
 						<div class="toolbar-cluster" id="marqueeActionRow"></div>
 						<div class="toolbar-divider" aria-hidden="true"></div>
-						<div class="toolbar-cluster">
+						<div class="toolbar-cluster toolbar-cluster--end">
 							<button class="btn btn--ghost" id="keepAllBtn" type="button">Keep all</button>
 							<button class="btn btn--ghost" id="censorAllBtn" type="button">Censor all</button>
 						</div>

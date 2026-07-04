@@ -66,12 +66,21 @@ body {
 	letter-spacing: -0.02em;
 	margin: 0;
 }
-.topbar__tag {
-	margin: 0.5rem 0 0;
-	color: var(--ink-soft);
-	font-size: 0.98rem;
-	max-width: 46em;
+.topbar__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  cursor: pointer;
 }
+.topbar__back[hidden] { display: none; }
+.topbar__back:hover { color: var(--accent); text-decoration: underline; }
 
 .app {
 	max-width: 1200px;
@@ -165,6 +174,13 @@ body {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
+}
+.toolbar-cluster--end {
+	margin-left: auto;
+}
+.toolbar-cluster--end .btn--ghost {
+	flex: none;
+	white-space: nowrap;
 }
 .toolbar-divider {
 	width: 1px;

@@ -7,6 +7,9 @@ import { CanvasRenderer } from "./ui/CanvasRenderer.js";
 import { Toolbar } from "./ui/Toolbar.js";
 import { Toast } from "./ui/Toast.js";
 import { downloadCanvasAsPNG } from "./utils/exportImage.js";
+import { ensureFakeTextFontLoaded } from "./utils/fontLoader.js";
+
+ensureFakeTextFontLoaded();
 
 const dropzoneEl = document.getElementById("dropzone");
 const workspaceEl = document.getElementById("workspace");
@@ -96,8 +99,9 @@ function handleRetry() {
 	runDetection(state.sourceImage);
 }
 
-function handleDownload() {
+async function handleDownload() {
 	if (!state.sourceImage) return;
+	await ensureFakeTextFontLoaded(); // no-op if already loaded; guards a slow/first-time fetch
 	const outputCanvas = CensorEngine.render(imageCanvas, state.regions, state.censorMethodId);
 	downloadCanvasAsPNG(outputCanvas, "redacted-image.png");
 	toast.show("Downloaded.");
