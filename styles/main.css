@@ -7,12 +7,12 @@
 	--ink: #201d18;
 	--ink-soft: #55503f;
 	--redact: #1a1a1a;
-	--accent: #a3312a; /* stamp red */
+	--accent: #a3312a;
 	--accent-soft: #c9564d;
-	--keep: #3f6b4f; /* kept-region green */
+	--keep: #3f6b4f;
 	--line: #c7c2b2;
 
-	--font-display: "Caveat", cursive;
+	--font-display: "Redacted Script", cursive;
 	--font-body: "Source Serif 4", Georgia, serif;
 	--font-mono: "JetBrains Mono", ui-monospace, monospace;
 
@@ -32,9 +32,6 @@ body {
 	min-height: 100vh;
 }
 
-/* ---------------------------------------------------------
-   Topbar
---------------------------------------------------------- */
 .topbar {
 	padding: 2.5rem 2rem 1.5rem;
 	border-bottom: 1px solid var(--line);
@@ -45,6 +42,11 @@ body {
 	display: flex;
 	align-items: baseline;
 	gap: 0.9rem;
+}
+.btn--back {
+	flex: none;
+	padding: 0.4rem 0.7rem;
+	font-size: 0.75rem;
 }
 .topbar__stamp {
 	font-family: var(--font-mono);
@@ -71,22 +73,15 @@ body {
 	max-width: 46em;
 }
 
-/* ---------------------------------------------------------
-   Layout
---------------------------------------------------------- */
 .app {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 2rem;
 }
 
-/* ---------------------------------------------------------
-   Dropzone
---------------------------------------------------------- */
 .dropzone[data-visible="false"] {
 	display: none;
 }
-
 .dropzone__inner {
 	border: 2px dashed var(--ink-soft);
 	border-radius: var(--radius);
@@ -119,9 +114,6 @@ body {
 	margin-top: 0.5rem;
 }
 
-/* ---------------------------------------------------------
-   Workspace
---------------------------------------------------------- */
 .workspace[data-visible="false"] {
 	display: none;
 }
@@ -131,14 +123,12 @@ body {
 	gap: 2rem;
 	align-items: start;
 }
-
 @media (max-width: 800px) {
 	.workspace {
 		grid-template-columns: 1fr;
 	}
 }
 
-/* Grey out everything except the loading overlay itself while scanning */
 .workspace.is-loading .canvas-toolbar,
 .workspace.is-loading .sidebar {
 	opacity: 0.45;
@@ -151,9 +141,6 @@ body {
 	pointer-events: none;
 }
 
-/* ---------------------------------------------------------
-   Canvas column: toolbar strip + canvas
---------------------------------------------------------- */
 .canvas-column {
 	display: flex;
 	flex-direction: column;
@@ -165,7 +152,7 @@ body {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 0.5rem 0.75rem;
+	gap: 0.6rem;
 	background: rgba(255, 255, 255, 0.5);
 	border: 1px solid var(--line);
 	border-radius: var(--radius);
@@ -174,26 +161,66 @@ body {
 		opacity 0.15s ease,
 		filter 0.15s ease;
 }
-.canvas-toolbar__actions {
+.toolbar-cluster {
 	display: flex;
+	align-items: center;
 	gap: 0.5rem;
 }
-
-.method-list--row {
-	display: flex;
-	flex-direction: row;
-	gap: 0.5rem;
+.toolbar-divider {
+	width: 1px;
+	align-self: stretch;
+	background: var(--line);
+	margin: 0 0.15rem;
 }
-.method-list--row .method-option {
-	padding: 0.4rem 0.6rem;
-}
-.method-list--row .method-option__desc {
-	display: none;
-} /* keep the strip compact */
 
-/* ---------------------------------------------------------
-   Sidebar (method + export)
---------------------------------------------------------- */
+.tool-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.5rem 0.7rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: #fff;
+	color: var(--ink-soft);
+	cursor: pointer;
+	font-family: var(--font-mono);
+	font-size: 0.76rem;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease,
+		color 0.15s ease;
+}
+.tool-btn svg {
+	width: 15px;
+	height: 15px;
+	flex-shrink: 0;
+}
+.tool-btn:hover {
+	border-color: var(--accent-soft);
+	color: var(--ink);
+}
+.tool-btn[aria-pressed="true"] {
+	background: var(--ink);
+	border-color: var(--ink);
+	color: var(--paper);
+}
+.tool-btn--censor {
+	color: var(--accent);
+}
+.tool-btn--censor[aria-pressed="true"] {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: #fff;
+}
+.tool-btn--keep {
+	color: var(--keep);
+}
+.tool-btn--keep[aria-pressed="true"] {
+	background: var(--keep);
+	border-color: var(--keep);
+	color: #fff;
+}
+
 .sidebar {
 	position: sticky;
 	top: 1.5rem;
@@ -212,9 +239,6 @@ body {
 	margin-top: 0.5rem;
 }
 
-/* ---------------------------------------------------------
-   Canvas stage
---------------------------------------------------------- */
 .canvas-wrap {
 	position: relative;
 	max-width: 100%;
@@ -243,9 +267,6 @@ body {
 	cursor: pointer;
 }
 
-/* ---------------------------------------------------------
-   Loading overlay (progress bar, centered on top of the image)
---------------------------------------------------------- */
 .loading-overlay {
 	position: absolute;
 	inset: 0;
@@ -387,10 +408,11 @@ body {
 	border-color: var(--ink);
 	color: var(--paper);
 }
+.btn--block {
+	width: 100%;
+	margin-top: 0.6rem;
+}
 
-/* ---------------------------------------------------------
-   Progress bar
---------------------------------------------------------- */
 .progress-bar {
 	width: 100%;
 	height: 8px;
@@ -407,9 +429,6 @@ body {
 	transition: width 0.2s ease;
 }
 
-/* ---------------------------------------------------------
-   Skeleton loading overlay (shown on the canvas while OCR runs)
---------------------------------------------------------- */
 .skeleton-overlay {
 	position: absolute;
 	inset: 0;
@@ -438,25 +457,28 @@ body {
 	}
 }
 
-/* ---------------------------------------------------------
-   Toast
---------------------------------------------------------- */
 .toast {
 	position: fixed;
 	bottom: 1.5rem;
 	left: 50%;
 	transform: translateX(-50%) translateY(120%);
+	opacity: 0;
+	pointer-events: none;
 	background: var(--ink);
 	color: var(--paper);
 	font-family: var(--font-mono);
 	font-size: 0.82rem;
 	padding: 0.7rem 1.1rem;
 	border-radius: var(--radius);
-	transition: transform 0.25s ease;
+	transition:
+		transform 0.25s ease,
+		opacity 0.25s ease;
 	z-index: 20;
 }
 .toast.is-visible {
 	transform: translateX(-50%) translateY(0);
+	opacity: 1;
+	pointer-events: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {

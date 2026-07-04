@@ -1,91 +1,83 @@
 <!doctype html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Redactor — image text censor</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Redacted+Script&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="styles/main.css" />
+	</head>
+	<body>
+		<header class="topbar">
+			<div class="topbar__mark">
+				<button class="btn btn--ghost btn--back" id="resetBtn" type="button" hidden>&larr; Start over</button>
+				<span class="topbar__stamp">REDACTED</span>
+				<h1 class="topbar__title">Redactor</h1>
+			</div>
+			<p class="topbar__tag">Drop an image, choose what to hide, download the result. Nothing leaves your browser.</p>
+		</header>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Redactor — image text censor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="styles/main.css" />
-</head>
+		<main class="app" id="app">
+			<!-- STAGE 1: drop zone (shown until an image is loaded) -->
+			<section class="dropzone" id="dropzone" data-visible="true">
+				<div class="dropzone__inner">
+					<p class="dropzone__icon" aria-hidden="true">&#8681;</p>
+					<p class="dropzone__label">Drag an image here, or click to choose one</p>
+					<p class="dropzone__hint">PNG, JPG, WEBP — processed entirely on your device</p>
+					<input type="file" id="fileInput" accept="image/*" hidden />
+				</div>
+			</section>
 
-<body>
+			<!-- STAGE 2: workspace (shown once an image is loaded) -->
+			<section class="workspace" id="workspace" data-visible="false">
+				<div class="canvas-column">
+					<div class="canvas-toolbar" id="canvasToolbar">
+						<div class="toolbar-cluster" id="toolList" role="radiogroup" aria-label="Canvas tool"></div>
+						<div class="toolbar-divider" aria-hidden="true"></div>
+						<div class="toolbar-cluster" id="marqueeActionRow"></div>
+						<div class="toolbar-divider" aria-hidden="true"></div>
+						<div class="toolbar-cluster">
+							<button class="btn btn--ghost" id="keepAllBtn" type="button">Keep all</button>
+							<button class="btn btn--ghost" id="censorAllBtn" type="button">Censor all</button>
+						</div>
+					</div>
+					<p class="toolbar__hint toolbar__hint--small">Click a box to toggle it, or drag across several. Right-click a dashed manual box to delete it.</p>
 
-  <header class="topbar">
-    <div class="topbar__mark">
-      <span class="topbar__stamp">REDACTED</span>
-      <h1 class="topbar__title">Redactor</h1>
-    </div>
-    <p class="topbar__tag">Drop an image, choose what to hide, download the result. Nothing leaves your browser.</p>
-  </header>
+					<div class="canvas-wrap" id="canvasWrap">
+						<canvas id="imageCanvas"></canvas>
+						<canvas id="overlayCanvas"></canvas>
+						<div class="skeleton-overlay" id="skeletonOverlay" aria-hidden="true"></div>
+						<div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+							<div class="progress-bar" id="progressBar">
+								<div class="progress-bar__fill" id="progressFill"></div>
+							</div>
+							<p class="loading-overlay__label" id="loadingLabel">Scanning for text…</p>
+						</div>
+					</div>
+				</div>
 
-  <main class="app" id="app">
+				<aside class="sidebar" id="sidebar">
+					<div class="sidebar__group">
+						<h2 class="toolbar__heading">Method</h2>
+						<div class="method-list" id="methodList" role="radiogroup" aria-label="Censor method"></div>
+						<p class="toolbar__hint" id="regionCount"></p>
+						<button class="btn btn--ghost btn--block" id="retryBtn" type="button">Retry text detection</button>
+					</div>
 
-    <!-- STAGE 1: drop zone (shown until an image is loaded) -->
-    <section class="dropzone" id="dropzone" data-visible="true">
-      <div class="dropzone__inner">
-        <p class="dropzone__icon" aria-hidden="true">&#8681;</p>
-        <p class="dropzone__label">Drag an image here, or click to choose one</p>
-        <p class="dropzone__hint">PNG, JPG, WEBP — processed entirely on your device</p>
-        <input type="file" id="fileInput" accept="image/*" hidden />
-      </div>
-    </section>
+					<div class="sidebar__group sidebar__group--push">
+						<button class="btn btn--primary" id="downloadBtn" type="button">Download censored image</button>
+					</div>
+				</aside>
+			</section>
+		</main>
 
-    <!-- STAGE 2: workspace (shown once an image is loaded) -->
-    <section class="workspace" id="workspace" data-visible="false">
+		<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-      <div class="canvas-column">
-        <div class="canvas-toolbar" id="canvasToolbar">
-          <div class="method-list method-list--row" id="toolList" role="radiogroup" aria-label="Canvas tool"></div>
-          <div class="canvas-toolbar__actions" id="marqueeActionRow">
-            <button class="btn btn--ghost" id="marqueeCensorBtn" type="button">Drag → censor</button>
-            <button class="btn btn--ghost" id="marqueeKeepBtn" type="button">Drag → keep</button>
-          </div>
-          <div class="canvas-toolbar__actions">
-            <button class="btn btn--ghost" id="keepAllBtn" type="button">Keep all</button>
-            <button class="btn btn--ghost" id="censorAllBtn" type="button">Censor all</button>
-          </div>
-        </div>
-
-        <div class="canvas-wrap" id="canvasWrap">
-          <canvas id="imageCanvas"></canvas>
-          <canvas id="overlayCanvas"></canvas>
-          <div class="skeleton-overlay" id="skeletonOverlay" aria-hidden="true"></div>
-          <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
-            <div class="progress-bar" id="progressBar">
-              <div class="progress-bar__fill" id="progressFill"></div>
-            </div>
-            <p class="loading-overlay__label" id="loadingLabel">Scanning for text…</p>
-          </div>
-        </div>
-        <p class="toolbar__hint toolbar__hint--small">Click a box to toggle it, or drag across several. Right-click a
-          dashed manual box to delete it.</p>
-      </div>
-
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar__group">
-          <h2 class="toolbar__heading">Method</h2>
-          <div class="method-list" id="methodList" role="radiogroup" aria-label="Censor method"></div>
-          <p class="toolbar__hint" id="regionCount"></p>
-        </div>
-
-        <div class="sidebar__group sidebar__group--push">
-          <button class="btn btn--primary" id="downloadBtn" type="button">Download censored image</button>
-          <button class="btn btn--ghost" id="resetBtn" type="button">Start over</button>
-        </div>
-      </aside>
-
-    </section>
-
-  </main>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script type="module" src="src/main.js"></script>
-</body>
-
+		<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+		<script type="module" src="src/main.js"></script>
+	</body>
 </html>
