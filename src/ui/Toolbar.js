@@ -140,6 +140,9 @@ export class Toolbar {
 		this.els.downloadBtn.addEventListener("click", () => this.handlers.onDownload());
 		this.els.resetBtn.addEventListener("click", () => this.handlers.onReset());
 		this.els.retryBtn.addEventListener("click", () => this.handlers.onRetry());
+		this.els.resetBtn.addEventListener('click', () => this.handlers.onReset());
+		this.els.retryBtn.addEventListener('click', () => this.handlers.onRetry());
+		this.els.clearAllBtn.addEventListener('click', () => this.handlers.onClearAll());
 	}
 
 	_bindStateEvents() {

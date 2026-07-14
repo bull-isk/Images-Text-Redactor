@@ -31,7 +31,8 @@ const toolbarEls = {
 	censorAllBtn: document.getElementById("censorAllBtn"),
 	downloadBtn: document.getElementById("downloadBtn"),
 	resetBtn: resetBtnEl,
-	retryBtn: document.getElementById("retryBtn"),
+	retryBtn: document.getElementById('retryBtn'),
+	clearAllBtn: document.getElementById('clearAllBtn'),
 };
 
 const state = new AppState();
@@ -55,6 +56,7 @@ const toolbar = new Toolbar(toolbarEls, state, {
 	onDownload: handleDownload,
 	onReset: handleReset,
 	onRetry: handleRetry,
+	onClearAll: handleClearAll,
 });
 
 state.on("regions:changed", (regions) => renderer.renderRegions(regions));
@@ -97,6 +99,11 @@ function handleRetry() {
 	if (!state.sourceImage) return;
 	state.setRegions([]);
 	runDetection(state.sourceImage);
+}
+
+function handleClearAll() {
+	state.setRegions([]);
+	toast.show('Cleared draw your own boxes with Manual censor.');
 }
 
 async function handleDownload() {

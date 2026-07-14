@@ -5,12 +5,27 @@
  * directly. If you ever swap OCR providers (cloud API, a different
  * WASM engine, etc.), this is the only file that changes.
  */
+
+// Border/gridline characters Tesseract sometimes misreads as "text"
+// when scanning spreadsheets, tables, and forms.
+const GRID_ARTIFACT_PATTERN = /^[\s\-_|=~.·•+:;]+$/;
+// Tesseract confidence is 0-100; below this is usually noise rather
+// than a real character (often the same gridline/border artifacts).
+const MIN_CONFIDENCE = 35;
+
+function isLikelyGridArtifact(word) {
+  const text = word.text.trim();
+  if (GRID_ARTIFACT_PATTERN.test(text)) return true;
+  if (word.confidence < MIN_CONFIDENCE) return true;
+  return false;
+}
+
 export class OCREngine {
   /**
    * @param {(progress: {status: string, progress: number}) => void} [onProgress]
    */
   constructor(onProgress) {
-    this._onProgress = onProgress || (() => {});
+    this._onProgress = onProgress || (() => { });
     this._worker = null;
   }
 
@@ -20,6 +35,21 @@ export class OCREngine {
     this._worker = await Tesseract.createWorker('eng', 1, {
       logger: (m) => this._onProgress(m),
     });
+
+    // Spreadsheets, forms, and UI screenshots hold scattered,
+    // disconnected text rather than flowing paragraphs. Tesseract's
+    // default page-segmentation mode runs full layout analysis first
+    // (grouping text into columns/blocks), which on a grid of cells
+    // often mis-reads border lines as text and/or drops isolated cell
+    // values it can't fit into a column. PSM 11 ("sparse text") skips
+    // layout analysis and just looks for text anywhere on the page,
+    // which matches this kind of image much better — and doesn't hurt
+    // normal documents/photos either, since we don't rely on Tesseract's
+    // reading order (CensorEngine sorts regions itself).
+    await this._worker.setParameters({
+      tessedit_pageseg_mode: '11',
+    });
+
     return this._worker;
   }
 
@@ -35,6 +65,7 @@ export class OCREngine {
     const words = data.words || [];
     return words
       .filter((w) => w.text && w.text.trim().length > 0)
+      .filter((w) => !isLikelyGridArtifact(w))
       .map((w) => ({
         text: w.text,
         x: w.bbox.x0,
