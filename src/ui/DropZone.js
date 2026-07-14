@@ -56,12 +56,11 @@ export class DropZone {
     const reader = new FileReader();
     reader.onload = () => {
       const img = new Image();
-      img.onload = () => this.onImageReady(img);
+      img.onload = () => this.onImageReady(img, file.name);
       img.src = reader.result;
     };
     reader.readAsDataURL(file);
   }
-
   hide() {
     this.rootEl.dataset.visible = 'false';
   }

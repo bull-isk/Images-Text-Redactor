@@ -6,7 +6,7 @@ import { DropZone } from "./ui/DropZone.js";
 import { CanvasRenderer } from "./ui/CanvasRenderer.js";
 import { Toolbar } from "./ui/Toolbar.js";
 import { Toast } from "./ui/Toast.js";
-import { downloadCanvasAsPNG } from "./utils/exportImage.js";
+import { downloadCanvasAsPNG, buildRedactedFilename } from './utils/exportImage.js';
 import { ensureFakeTextFontLoaded } from "./utils/fontLoader.js";
 
 ensureFakeTextFontLoaded();
@@ -50,7 +50,7 @@ const renderer = new CanvasRenderer(imageCanvas, overlayCanvas, {
 	onRegionDelete: (regionId) => state.removeRegion(regionId),
 });
 
-const dropZone = new DropZone(dropzoneEl, (image) => handleImageLoaded(image));
+const dropZone = new DropZone(dropzoneEl, (image, fileName) => handleImageLoaded(image, fileName));
 
 const toolbar = new Toolbar(toolbarEls, state, {
 	onDownload: handleDownload,
@@ -83,12 +83,12 @@ async function runDetection(image) {
 	}
 }
 
-async function handleImageLoaded(image) {
+async function handleImageLoaded(image, fileName) {
 	dropZone.hide();
-	workspaceEl.dataset.visible = "true";
+	workspaceEl.dataset.visible = 'true';
 	resetBtnEl.hidden = false;
 
-	state.setSourceImage(image);
+	state.setSourceImage(image, fileName);
 	renderer.drawImage(image);
 	renderer.setTool(state.activeTool);
 
@@ -110,8 +110,8 @@ async function handleDownload() {
 	if (!state.sourceImage) return;
 	await ensureFakeTextFontLoaded(); // no-op if already loaded; guards a slow/first-time fetch
 	const outputCanvas = CensorEngine.render(imageCanvas, state.regions, state.censorMethodId);
-	downloadCanvasAsPNG(outputCanvas, "redacted-image.png");
-	toast.show("Downloaded.");
+	downloadCanvasAsPNG(outputCanvas, buildRedactedFilename(state.sourceFileName));
+	toast.show('Downloaded.');
 }
 
 function handleReset() {

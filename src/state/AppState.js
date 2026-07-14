@@ -12,6 +12,9 @@ export class AppState {
     /** @type {HTMLImageElement|null} the original, unmodified image */
     this.sourceImage = null;
 
+    /** @type {string|null} original uploaded filename, used to name the download */
+    this.sourceFileName = null;
+
     /** @type {import('../core/RegionManager.js').TextRegion[]} */
     this.regions = [];
 
@@ -44,8 +47,9 @@ export class AppState {
     (this._listeners.get(event) || []).forEach((fn) => fn(payload));
   }
 
-  setSourceImage(image) {
+  setSourceImage(image, fileName = null) {
     this.sourceImage = image;
+    this.sourceFileName = fileName;
     this.emit('image:loaded', image);
   }
 
